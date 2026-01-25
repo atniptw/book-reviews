@@ -1,0 +1,72 @@
+name: Book Review
+description: Submit a book review to be saved as a markdown file
+title: "[REVIEW] "
+labels: ["book-review"]
+body:
+  - type: input
+    id: title
+    attributes:
+      label: Book Title
+      description: The title of the book
+      placeholder: e.g., The Pragmatic Programmer
+    validations:
+      required: true
+
+  - type: input
+    id: author
+    attributes:
+      label: Author
+      description: The author(s) of the book
+      placeholder: e.g., David Thomas, Andrew Hunt
+    validations:
+      required: true
+
+  - type: dropdown
+    id: rating
+    attributes:
+      label: Rating
+      description: Your rating of the book
+      options:
+        - "5 - Excellent"
+        - "4 - Good"
+        - "3 - Average"
+        - "2 - Below Average"
+        - "1 - Poor"
+    validations:
+      required: true
+
+  - type: textarea
+    id: review
+    attributes:
+      label: Review
+      description: Your overall review of the book
+      placeholder: Write your review here...
+    validations:
+      required: true
+
+  - type: textarea
+    id: likes
+    attributes:
+      label: What I Liked
+      description: List the things you liked about the book
+      placeholder: |
+        - Point 1
+        - Point 2
+        - Point 3
+
+  - type: textarea
+    id: dislikes
+    attributes:
+      label: What I Disliked
+      description: List the things you disliked about the book
+      placeholder: |
+        - Point 1
+        - Point 2
+        - Point 3
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional Notes
+      description: Any additional notes or key takeaways
+      placeholder: Add any additional thoughts or key takeaways...
