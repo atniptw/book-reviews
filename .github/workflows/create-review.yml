@@ -1,203 +1,54 @@
-name: Create Book Review
+name: Assign Book Review to Copilot
 
 on:
   issues:
     types: [opened, labeled]
 
 jobs:
-  create-review:
+  assign-to-copilot:
     runs-on: ubuntu-latest
     if: contains(github.event.issue.labels.*.name, 'book-review')
     
     permissions:
-      contents: write
       issues: write
-      pull-requests: write
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Parse issue and create review
-        id: create-review
+      - name: Assign issue to Copilot
         uses: actions/github-script@v7
         with:
           script: |
             const issue = context.payload.issue;
-            const issueBody = issue.body;
             
-            // Parse the issue body to extract form data
-            const parseField = (fieldName) => {
-              const regex = new RegExp(`### ${fieldName}\\s*([\\s\\S]*?)(?=###|$)`, 'i');
-              const match = issueBody.match(regex);
-              return match ? match[1].trim() : '';
-            };
-            
-            const title = parseField('Book Title');
-            const author = parseField('Author');
-            const ratingText = parseField('Rating');
-            const rating = ratingText ? ratingText.split(' ')[0] : 'N/A'; // Extract number from "5 - Excellent"
-            let review = parseField('Review');
-            let likes = parseField('What I Liked');
-            let dislikes = parseField('What I Disliked');
-            let notes = parseField('Additional Notes');
-            
-            // AI-improve the text content using GitHub Models API
-            const improveText = async (text, section) => {
-              if (!text || text.trim().length === 0) return text;
-              
-              try {
-                const response = await fetch('https://models.inference.ai.azure.com/chat/completions', {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${process.env.GITHUB_TOKEN}`
-                  },
-                  body: JSON.stringify({
-                    messages: [
-                      {
-                        role: 'system',
-                        content: 'You are a helpful writing assistant. Improve the grammar, sentence structure, and clarity of the text while preserving the original meaning and tone. Keep the same format (bullet points, paragraphs, etc.). Only return the improved text, nothing else.'
-                      },
-                      {
-                        role: 'user',
-                        content: `Improve this ${section} section:\n\n${text}`
-                      }
-                    ],
-                    model: 'gpt-4o',
-                    temperature: 0.3,
-                    max_tokens: 2000
-                  })
-                });
-                
-                if (!response.ok) {
-                  const errorText = await response.text();
-                  console.log(`API error for ${section} (${response.status}): ${errorText}`);
-                  return text;
-                }
-                
-                const data = await response.json();
-                if (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
-                  return data.choices[0].message.content.trim();
-                } else {
-                  console.log(`Unexpected API response structure for ${section}`);
-                  return text;
-                }
-              } catch (error) {
-                console.log(`Failed to improve ${section}: ${error.message}`);
-                return text;
-              }
-            };
-            
-            // Improve each section
-            console.log('Improving review text with AI...');
-            review = await improveText(review, 'review');
-            likes = await improveText(likes, 'likes');
-            dislikes = await improveText(dislikes, 'dislikes');
-            notes = await improveText(notes, 'notes');
-            
-            // Create a safe filename from the book title
-            const safeTitle = title
-              .toLowerCase()
-              .replace(/[^a-z0-9]+/g, '-')
-              .replace(/(^-|-$)/g, '');
-            
-            // Validate filename and use fallback if needed
-            const filename = (safeTitle && safeTitle.length >= 3) 
-              ? `${safeTitle}.md` 
-              : `review-${Date.now()}.md`;
-            const date = new Date().toISOString().split('T')[0];
-            
-            // Create the markdown content
-            let markdown = `# ${title}\n\n`;
-            markdown += `**Author:** ${author}\n\n`;
-            markdown += `**Rating:** ${rating}/5\n\n`;
-            markdown += `**Review Date:** ${date}\n\n`;
-            markdown += `---\n\n`;
-            
-            if (review) {
-              markdown += `## Review\n\n${review}\n\n`;
-            }
-            
-            if (likes) {
-              markdown += `## What I Liked\n\n${likes}\n\n`;
-            }
-            
-            if (dislikes) {
-              markdown += `## What I Disliked\n\n${dislikes}\n\n`;
-            }
-            
-            if (notes) {
-              markdown += `## Additional Notes\n\n${notes}\n\n`;
-            }
-            
-            markdown += `---\n\n`;
-            markdown += `*Review submitted via [issue #${issue.number}](${issue.html_url})*\n`;
-            
-            // Write the file
-            const fs = require('fs');
-            const path = require('path');
-            
-            const reviewsDir = 'reviews';
-            if (!fs.existsSync(reviewsDir)) {
-              fs.mkdirSync(reviewsDir, { recursive: true });
-            }
-            
-            const filePath = path.join(reviewsDir, filename);
-            fs.writeFileSync(filePath, markdown);
-            
-            console.log(`Created review file: ${filePath}`);
-            
-            // Set outputs for later steps
-            core.setOutput('filename', filename);
-            core.setOutput('filepath', filePath);
-            core.setOutput('title', title);
-            
-            return { filename, filepath: filePath, title };
+            // Add a comment with instructions for Copilot
+            const instructions = `@copilot Please create a structured markdown file in the \`reviews/\` directory based on this book review.
 
-      - name: Commit and push review
-        run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git add reviews/
-          git commit -m "Add book review: ${{ steps.create-review.outputs.title }}"
-          git push
-
-      - name: Comment on issue
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const filename = '${{ steps.create-review.outputs.filename }}';
-            const filepath = '${{ steps.create-review.outputs.filepath }}';
-            const title = '${{ steps.create-review.outputs.title }}';
+            **Instructions:**
+            1. Parse the book review information from this issue
+            2. Improve the grammar and clarity of the review text while preserving the original meaning and tone
+            3. Create a markdown file with the following structure:
+               - Filename: Use a sanitized version of the book title (lowercase, replace special chars with hyphens)
+               - Content:
+                 - Book title as header
+                 - Author
+                 - Rating
+                 - Review date
+                 - Review text (improved)
+                 - What I Liked section (improved)
+                 - What I Disliked section (improved)
+                 - Additional Notes section (improved)
+                 - Link back to this issue
+            4. Create the file in the \`reviews/\` directory
+            5. Create a pull request with the new review file
+            6. Close this issue after the PR is created
             
-            const defaultBranch = context.payload.repository.default_branch || 'main';
-            const fileUrl = `${context.payload.repository.html_url}/blob/${defaultBranch}/${filepath}`;
-            
-            const comment = `✅ Book review has been created!
-            
-            📚 **${title}**
-            
-            The review has been saved to: [\`${filepath}\`](${fileUrl})
-            
-            ✨ Your review text has been improved with AI for better grammar and clarity.
-            
-            Thank you for your submission! This issue will now be closed.`;
+            Please make the review text polished and professional while keeping the original voice and meaning.`;
             
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              body: comment
+              body: instructions
             });
+            
+            console.log('Instructions posted for Copilot to process the book review.');
 
-      - name: Close issue
-        uses: actions/github-script@v7
-        with:
-          script: |
-            await github.rest.issues.update({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              state: 'closed'
-            });

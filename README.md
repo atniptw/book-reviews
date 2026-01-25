@@ -15,11 +15,13 @@ A repository for storing book reviews in structured markdown files, submitted vi
    - Any additional notes
 
 3. **Submit the issue** - The system will automatically:
-   - Parse your review
-   - **Improve grammar and clarity** using AI (GitHub Models API with GPT-4o)
-   - Create a structured markdown file in the `reviews/` directory
-   - Comment on the issue with a link to the created file
-   - Close the issue
+   - Post instructions for @copilot to process the review
+   - Copilot will then:
+     - Parse your review
+     - **Improve grammar and clarity** using AI
+     - Create a structured markdown file in the `reviews/` directory
+     - Create a pull request with the new file
+     - Close the issue after the PR is created
 
 ## Review Storage
 
@@ -32,15 +34,17 @@ All book reviews are stored as markdown files in the `reviews/` directory. Each 
 - Additional notes
 - Link back to the original issue
 
-## AI-Powered Grammar Improvement
+## Copilot-Powered Processing
 
-The workflow automatically improves your review text using AI before saving it. This helps ensure:
-- Proper grammar and sentence structure
-- Clear and professional writing
-- Consistent formatting
-- Your original meaning and tone are preserved
+When you submit a book review issue, the workflow automatically posts instructions for GitHub Copilot to process your review. Copilot will:
+- Improve grammar and sentence structure
+- Enhance clarity while preserving your original meaning and tone
+- Create a structured markdown file
+- Submit the file as a pull request for your review
 
-Don't worry about writing perfectly - just focus on capturing your thoughts, and the AI will polish the text for you!
+This approach allows you to review the changes before they're merged, giving you full control over what gets added to your book reviews collection.
+
+Don't worry about writing perfectly - just focus on capturing your thoughts, and Copilot will polish the text for you!
 
 ## Using Reviews with AI
 
@@ -57,7 +61,7 @@ book-reviews/
 │   ├── ISSUE_TEMPLATE/
 │   │   └── book-review.yml          # Issue template for submitting reviews
 │   └── workflows/
-│       └── create-review.yml        # GitHub Action to process reviews
+│       └── create-review.yml        # GitHub Action to assign reviews to Copilot
 ├── reviews/                         # All book reviews stored here
 │   └── .gitkeep
 ├── LICENSE
