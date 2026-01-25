@@ -16,6 +16,7 @@ A repository for storing book reviews in structured markdown files, submitted vi
 
 3. **Submit the issue** - The system will automatically:
    - Parse your review
+   - **Improve grammar and clarity** using AI (GitHub Copilot)
    - Create a structured markdown file in the `reviews/` directory
    - Comment on the issue with a link to the created file
    - Close the issue
@@ -30,6 +31,16 @@ All book reviews are stored as markdown files in the `reviews/` directory. Each 
 - Likes and dislikes
 - Additional notes
 - Link back to the original issue
+
+## AI-Powered Grammar Improvement
+
+The workflow automatically improves your review text using AI before saving it. This helps ensure:
+- Proper grammar and sentence structure
+- Clear and professional writing
+- Consistent formatting
+- Your original meaning and tone are preserved
+
+Don't worry about writing perfectly - just focus on capturing your thoughts, and the AI will polish the text for you!
 
 ## Using Reviews with AI
 

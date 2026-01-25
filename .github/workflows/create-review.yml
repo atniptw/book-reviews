@@ -37,10 +37,55 @@ jobs:
             const author = parseField('Author');
             const ratingText = parseField('Rating');
             const rating = ratingText ? ratingText.split(' ')[0] : 'N/A'; // Extract number from "5 - Excellent"
-            const review = parseField('Review');
-            const likes = parseField('What I Liked');
-            const dislikes = parseField('What I Disliked');
-            const notes = parseField('Additional Notes');
+            let review = parseField('Review');
+            let likes = parseField('What I Liked');
+            let dislikes = parseField('What I Disliked');
+            let notes = parseField('Additional Notes');
+            
+            // AI-improve the text content using GitHub Models API
+            const improveText = async (text, section) => {
+              if (!text || text.trim().length === 0) return text;
+              
+              try {
+                const response = await fetch('https://models.inference.ai.azure.com/chat/completions', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${process.env.GITHUB_TOKEN}`
+                  },
+                  body: JSON.stringify({
+                    messages: [
+                      {
+                        role: 'system',
+                        content: 'You are a helpful writing assistant. Improve the grammar, sentence structure, and clarity of the text while preserving the original meaning and tone. Keep the same format (bullet points, paragraphs, etc.). Only return the improved text, nothing else.'
+                      },
+                      {
+                        role: 'user',
+                        content: `Improve this ${section} section:\n\n${text}`
+                      }
+                    ],
+                    model: 'gpt-4o',
+                    temperature: 0.3,
+                    max_tokens: 2000
+                  })
+                });
+                
+                if (response.ok) {
+                  const data = await response.json();
+                  return data.choices[0].message.content.trim();
+                }
+              } catch (error) {
+                console.log(`Failed to improve ${section}, using original: ${error.message}`);
+              }
+              return text;
+            };
+            
+            // Improve each section
+            console.log('Improving review text with AI...');
+            review = await improveText(review, 'review');
+            likes = await improveText(likes, 'likes');
+            dislikes = await improveText(dislikes, 'dislikes');
+            notes = await improveText(notes, 'notes');
             
             // Create a safe filename from the book title
             const safeTitle = title
@@ -125,6 +170,8 @@ jobs:
             📚 **${title}**
             
             The review has been saved to: [\`${filepath}\`](${fileUrl})
+            
+            ✨ Your review text has been improved with AI for better grammar and clarity.
             
             Thank you for your submission! This issue will now be closed.`;
             
