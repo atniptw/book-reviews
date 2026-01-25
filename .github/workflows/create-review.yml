@@ -1,0 +1,141 @@
+name: Create Book Review
+
+on:
+  issues:
+    types: [opened, labeled]
+
+jobs:
+  create-review:
+    runs-on: ubuntu-latest
+    if: contains(github.event.issue.labels.*.name, 'book-review')
+    
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Parse issue and create review
+        id: create-review
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const issueBody = issue.body;
+            
+            // Parse the issue body to extract form data
+            const parseField = (fieldName) => {
+              const regex = new RegExp(`### ${fieldName}\\s*([\\s\\S]*?)(?=###|$)`, 'i');
+              const match = issueBody.match(regex);
+              return match ? match[1].trim() : '';
+            };
+            
+            const title = parseField('Book Title');
+            const author = parseField('Author');
+            const ratingText = parseField('Rating');
+            const rating = ratingText.split(' ')[0]; // Extract number from "5 - Excellent"
+            const review = parseField('Review');
+            const likes = parseField('What I Liked');
+            const dislikes = parseField('What I Disliked');
+            const notes = parseField('Additional Notes');
+            
+            // Create a safe filename from the book title
+            const safeTitle = title
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, '-')
+              .replace(/(^-|-$)/g, '');
+            
+            const filename = `${safeTitle}.md`;
+            const date = new Date().toISOString().split('T')[0];
+            
+            // Create the markdown content
+            let markdown = `# ${title}\n\n`;
+            markdown += `**Author:** ${author}\n\n`;
+            markdown += `**Rating:** ${rating}/5\n\n`;
+            markdown += `**Review Date:** ${date}\n\n`;
+            markdown += `---\n\n`;
+            
+            if (review) {
+              markdown += `## Review\n\n${review}\n\n`;
+            }
+            
+            if (likes) {
+              markdown += `## What I Liked\n\n${likes}\n\n`;
+            }
+            
+            if (dislikes) {
+              markdown += `## What I Disliked\n\n${dislikes}\n\n`;
+            }
+            
+            if (notes) {
+              markdown += `## Additional Notes\n\n${notes}\n\n`;
+            }
+            
+            markdown += `---\n\n`;
+            markdown += `*Review submitted via [issue #${issue.number}](${issue.html_url})*\n`;
+            
+            // Write the file
+            const fs = require('fs');
+            const path = require('path');
+            
+            const reviewsDir = 'reviews';
+            if (!fs.existsSync(reviewsDir)) {
+              fs.mkdirSync(reviewsDir, { recursive: true });
+            }
+            
+            const filePath = path.join(reviewsDir, filename);
+            fs.writeFileSync(filePath, markdown);
+            
+            console.log(`Created review file: ${filePath}`);
+            
+            // Set outputs for later steps
+            core.setOutput('filename', filename);
+            core.setOutput('filepath', filePath);
+            core.setOutput('title', title);
+            
+            return { filename, filepath: filePath, title };
+
+      - name: Commit and push review
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add reviews/
+          git commit -m "Add book review: ${{ steps.create-review.outputs.title }}"
+          git push
+
+      - name: Comment on issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const filename = '${{ steps.create-review.outputs.filename }}';
+            const filepath = '${{ steps.create-review.outputs.filepath }}';
+            const title = '${{ steps.create-review.outputs.title }}';
+            
+            const comment = `✅ Book review has been created!
+            
+            📚 **${title}**
+            
+            The review has been saved to: [\`${filepath}\`](${context.payload.repository.html_url}/blob/${context.ref.replace('refs/heads/', '')}/${filepath})
+            
+            Thank you for your submission! This issue will now be closed.`;
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: comment
+            });
+
+      - name: Close issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              state: 'closed'
+            });
