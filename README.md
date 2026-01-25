@@ -16,7 +16,7 @@ A repository for storing book reviews in structured markdown files, submitted vi
 
 3. **Submit the issue** - The system will automatically:
    - Parse your review
-   - **Improve grammar and clarity** using AI (GitHub Copilot)
+   - **Improve grammar and clarity** using AI (GitHub Models API with GPT-4o)
    - Create a structured markdown file in the `reviews/` directory
    - Comment on the issue with a link to the created file
    - Close the issue

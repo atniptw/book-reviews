@@ -70,14 +70,23 @@ jobs:
                   })
                 });
                 
-                if (response.ok) {
-                  const data = await response.json();
+                if (!response.ok) {
+                  const errorText = await response.text();
+                  console.log(`API error for ${section} (${response.status}): ${errorText}`);
+                  return text;
+                }
+                
+                const data = await response.json();
+                if (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
                   return data.choices[0].message.content.trim();
+                } else {
+                  console.log(`Unexpected API response structure for ${section}`);
+                  return text;
                 }
               } catch (error) {
-                console.log(`Failed to improve ${section}, using original: ${error.message}`);
+                console.log(`Failed to improve ${section}: ${error.message}`);
+                return text;
               }
-              return text;
             };
             
             // Improve each section
