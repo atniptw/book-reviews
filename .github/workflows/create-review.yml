@@ -48,7 +48,10 @@ jobs:
               .replace(/[^a-z0-9]+/g, '-')
               .replace(/(^-|-$)/g, '');
             
-            const filename = `${safeTitle}.md`;
+            // Validate filename and use fallback if needed
+            const filename = (safeTitle && safeTitle.length >= 3) 
+              ? `${safeTitle}.md` 
+              : `review-${Date.now()}.md`;
             const date = new Date().toISOString().split('T')[0];
             
             // Create the markdown content
@@ -114,8 +117,8 @@ jobs:
             const filepath = '${{ steps.create-review.outputs.filepath }}';
             const title = '${{ steps.create-review.outputs.title }}';
             
-            const branch = context.ref ? context.ref.replace('refs/heads/', '') : context.sha || 'main';
-            const fileUrl = `${context.payload.repository.html_url}/blob/${branch}/${filepath}`;
+            const defaultBranch = context.payload.repository.default_branch || 'main';
+            const fileUrl = `${context.payload.repository.html_url}/blob/${defaultBranch}/${filepath}`;
             
             const comment = `✅ Book review has been created!
             
