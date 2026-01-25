@@ -2,7 +2,7 @@ name: Assign Book Review to Copilot
 
 on:
   issues:
-    types: [opened, labeled]
+    types: [opened]
 
 jobs:
   assign-to-copilot:

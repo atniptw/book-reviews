@@ -36,4 +36,4 @@ Key takeaways:
 
 ---
 
-*Example book review file*
+*Review submitted via [issue #1](https://github.com/atniptw/book-reviews/issues/1)*
