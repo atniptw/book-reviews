@@ -36,7 +36,7 @@ jobs:
             const title = parseField('Book Title');
             const author = parseField('Author');
             const ratingText = parseField('Rating');
-            const rating = ratingText.split(' ')[0]; // Extract number from "5 - Excellent"
+            const rating = ratingText ? ratingText.split(' ')[0] : 'N/A'; // Extract number from "5 - Excellent"
             const review = parseField('Review');
             const likes = parseField('What I Liked');
             const dislikes = parseField('What I Disliked');
@@ -114,11 +114,14 @@ jobs:
             const filepath = '${{ steps.create-review.outputs.filepath }}';
             const title = '${{ steps.create-review.outputs.title }}';
             
+            const branch = context.ref ? context.ref.replace('refs/heads/', '') : context.sha || 'main';
+            const fileUrl = `${context.payload.repository.html_url}/blob/${branch}/${filepath}`;
+            
             const comment = `✅ Book review has been created!
             
             📚 **${title}**
             
-            The review has been saved to: [\`${filepath}\`](${context.payload.repository.html_url}/blob/${context.ref.replace('refs/heads/', '')}/${filepath})
+            The review has been saved to: [\`${filepath}\`](${fileUrl})
             
             Thank you for your submission! This issue will now be closed.`;
             
