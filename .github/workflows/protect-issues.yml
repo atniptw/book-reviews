@@ -1,0 +1,40 @@
+name: Protect Issues
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  issues: write
+
+jobs:
+  close-unauthorized-issues:
+    runs-on: ubuntu-latest
+    if: github.event.issue.user.login != github.repository_owner
+    steps:
+      - name: Close issue and add comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Close the issue with state_reason: not_planned
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              state: 'closed',
+              state_reason: 'not_planned'
+            });
+            
+            // Add a friendly comment
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `👋 Thanks for your interest in this project!
+
+This is a personal book review repository, and issues are restricted to the repository owner only.
+
+**Have questions or want to discuss this setup?** Please use [Discussions](../../discussions) instead!
+
+**Want to create your own book review system?** Feel free to fork this repository and customize it for your needs!`
+            });
