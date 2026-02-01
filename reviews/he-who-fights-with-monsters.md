@@ -1,4 +1,4 @@
-# He Who Fights with Monsters
+# He Who Fights with Monsters (Book 1)
 
 **Author:** Shirtaloon, Travis Deverell
 
