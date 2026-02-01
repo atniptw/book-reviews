@@ -2,7 +2,32 @@ name: Book Review
 description: Submit a book review to be saved as a markdown file
 title: "[REVIEW] "
 labels: ["book-review"]
+assignees:
+  - copilot
 body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 🤖 Instructions for @copilot
+        
+        When assigned to this issue, please:
+        1. Parse the book review information from the fields below
+        2. Create a polished markdown file in the `reviews/` directory with:
+           - **Filename:** Use a sanitized version of the book title (lowercase, replace spaces and special characters with hyphens) with `.md` extension (e.g., `the-pragmatic-programmer.md`)
+           - **Content structure:**
+             - Book title as H1 header
+             - Author, rating, and review date as metadata (use bold text format like `**Author:** Name`)
+             - Improved review text (polish grammar and clarity while preserving original tone)
+             - "What I Liked" section
+             - "What I Disliked" section
+             - "Additional Notes" section
+             - Link back to this issue
+        3. Create a pull request with the new review file
+        4. Use commit message: "Add review: [Book Title]"
+        5. Comment on this issue with a link to the PR
+        
+        ---
+
   - type: input
     id: title
     attributes:
