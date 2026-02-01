@@ -14,14 +14,14 @@ A repository for storing book reviews in structured markdown files, submitted vi
    - What you disliked
    - Any additional notes
 
-3. **Submit the issue** - The system will automatically:
-   - Post instructions for @copilot to process the review
+3. **Submit the issue** - The system will automatically post a helpful comment with instructions
+4. **Comment on the issue** with: `@copilot create a PR with a polished review in reviews/`
+   - 💡 **Mobile tip:** Save this as a GitHub saved reply for quick access!
    - Copilot will then:
      - Parse your review
      - **Improve grammar and clarity** using AI
      - Create a structured markdown file in the `reviews/` directory
      - Create a pull request with the new file
-     - Close the issue after the PR is created
 
 ## Review Storage
 
@@ -36,7 +36,7 @@ All book reviews are stored as markdown files in the `reviews/` directory. Each 
 
 ## Copilot-Powered Processing
 
-When you submit a book review issue, the workflow automatically posts instructions for GitHub Copilot to process your review. Copilot will:
+When you submit a book review issue, the workflow automatically posts a helpful comment with simple instructions. You then comment with `@copilot create a PR with a polished review in reviews/` to trigger Copilot to process your review. Copilot will:
 - Improve grammar and sentence structure
 - Enhance clarity while preserving your original meaning and tone
 - Create a structured markdown file
@@ -61,7 +61,7 @@ book-reviews/
 │   ├── ISSUE_TEMPLATE/
 │   │   └── book-review.yml          # Issue template for submitting reviews
 │   └── workflows/
-│       └── create-review.yml        # GitHub Action to assign reviews to Copilot
+│       └── create-review.yml        # GitHub Action to post helpful comment
 ├── reviews/                         # All book reviews stored here
 │   └── .gitkeep
 ├── LICENSE
