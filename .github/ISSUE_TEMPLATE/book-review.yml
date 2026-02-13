@@ -19,7 +19,7 @@ body:
            - **Filename:** Use a sanitized version of the book title (lowercase, replace spaces and special characters with hyphens) with `.md` extension (e.g., `the-pragmatic-programmer.md`)
            - **Content structure:**
              - Book title as H1 header
-             - Author, rating, and review date as metadata (use bold text format like `**Author:** Name`)
+             - Author, rating, review date, format, and reading context as metadata (use bold text format like `**Author:** Name`)
              - Improved review text (polish grammar and clarity while preserving original tone)
              - "What I Liked" section
              - "What I Disliked" section
@@ -62,6 +62,30 @@ body:
         - "1 - Poor"
     validations:
       required: true
+
+  - type: dropdown
+    id: format
+    attributes:
+      label: Format
+      description: How did you read/listen to this book?
+      options:
+        - "Audiobook"
+        - "Physical"
+        - "eBook"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: reading_context
+    attributes:
+      label: Reading Context
+      description: When/where did you read this book? (Select all that apply)
+      options:
+        - label: "While running"
+        - label: "Before bed"
+        - label: "During commute/driving"
+        - label: "Book club"
+        - label: "Other/Multiple contexts"
 
   - type: textarea
     id: review
